@@ -1,10 +1,10 @@
-import makeUuid from "./makeUuid"
+import makeUuid from './makeUuid';
 
 const makeInitTodoItem = (options = {}) => ({
   id: makeUuid(),
-  isChecked: false,
+  checked: false,
   content: '',
-  ...options
-})
+  ...options,
+});
 
-export default makeInitTodoItem
+export default makeInitTodoItem;

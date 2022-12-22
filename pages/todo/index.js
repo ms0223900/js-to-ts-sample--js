@@ -1,18 +1,26 @@
-import { Title } from "@mui/icons-material"
-import Head from "next/head"
-import TodoListContainer from "../../src/TodoList/TodoListContainer"
+import { Title } from '@mui/icons-material';
+import Head from 'next/head';
+import asyncGetTodoList from '../../api/firebase/asyncGetTodoList';
+import TodoListContainer from '../../src/TodoList/TodoListContainer';
 
-export default function TodoPage() {
+export const getServerSideProps = async () => {
+  const res = await asyncGetTodoList();
+  return {
+    props: {
+      initTodoListData: res,
+    },
+  };
+};
+
+export default function TodoPage({ initTodoListData }) {
   return (
     <>
       <Head>
-        <title>
-          {'Todo List Sample'}
-        </title>
+        <title>{'Todo List Sample'}</title>
       </Head>
       <main>
-        <TodoListContainer />
+        <TodoListContainer initTodoListData={initTodoListData} />
       </main>
     </>
-  )
+  );
 }

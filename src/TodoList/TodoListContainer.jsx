@@ -1,16 +1,15 @@
-import React, { memo } from "react";
-import useTodoList from "./functions/useTodoList";
-import TodoList from "./TodoList";
+import React, { memo } from 'react';
+import useTodoList from './functions/useTodoList';
+import TodoList from './TodoList';
 
-const TodoListContainer = () => {
+const TodoListContainer = ({ initTodoListData = [] }) => {
   const {
     todoList,
     handleAddTodo,
     handleDeleteTodo,
     handleEditTodo,
     handleToggleChecked,
-    handleToggleEditingTodoList,
-  } = useTodoList();
+  } = useTodoList({ initTodoListData });
 
   return (
     <div>
@@ -20,7 +19,6 @@ const TodoListContainer = () => {
         onToggleChecked={handleToggleChecked}
         onChangeTodoContent={handleEditTodo}
         onDeleteTodo={handleDeleteTodo}
-        onToggleEditTodo={handleToggleEditingTodoList}
       />
     </div>
   );

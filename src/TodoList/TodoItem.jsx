@@ -1,16 +1,18 @@
-import { DeleteOutlineOutlined } from "@mui/icons-material";
-import { Box, Button, Checkbox, TextField } from "@mui/material";
-import React, { memo, useCallback } from "react";
-import useToggle from "./functions/useToggle";
+import { DeleteOutlineOutlined } from '@mui/icons-material';
+import { Box, Button, Checkbox, TextField } from '@mui/material';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
+import asyncUpdateTodo from '../../api/firebase/asyncUpdateTodo';
+import useToggle from './functions/useToggle';
 
 const TodoItem = ({
   id,
-  isChecked,
+  checked,
   content,
   onToggleChecked,
   onDelete,
   onChangeContent,
 }) => {
+  const prevContent = useRef(content);
   const { toggle: isEditing, setToggle, handleToggle } = useToggle();
   const handleEditContent = useCallback(
     (e) => {
@@ -25,16 +27,34 @@ const TodoItem = ({
     [id]
   );
 
+  const handleAsyncSaveContent = useCallback(async () => {
+    if (prevContent.current === content) return;
+
+    await asyncUpdateTodo(id, {
+      content,
+    });
+    setToggle(false);
+    prevContent.current = content;
+  }, [id, content]);
+
+  useEffect(() => {
+    prevContent.current = content;
+  }, []);
+
   return (
-    <Box display={"flex"} alignItems={"center"}>
-      <Checkbox checked={isChecked} onChange={handleToggleChecked} />
-      <div onDoubleClick={handleToggle}>
+    <Box display={'flex'} alignItems={'center'}>
+      <Checkbox checked={checked} onChange={handleToggleChecked} />
+      <div
+        onDoubleClick={async () => {
+          isEditing ? await handleAsyncSaveContent() : setToggle(true);
+        }}
+      >
         {isEditing ? (
           <TextField
             autoFocus={true}
             value={content}
             onChange={handleEditContent}
-            onBlur={() => setToggle(false)}
+            onBlur={handleAsyncSaveContent}
           />
         ) : (
           <p>{content}</p>

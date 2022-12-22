@@ -1,58 +1,75 @@
-import { useCallback, useState } from "react";
-import makeInitTodoItem from "./makeInitTodoItem";
-import useToggle from "./useToggle";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import asyncAddTodo from '../../../api/firebase/asyncAddTodo';
+import asyncDeleteTodo from '../../../api/firebase/asyncDeleteTodo';
+import asyncUpdateTodo from '../../../api/firebase/asyncUpdateTodo';
+import BasicStateStore from '../state/BasicStateStore';
+import TodoListState from '../state/TodoListState';
 
-const useTodoList = () => {
-  const [todoList, setTodoList] = useState([
-    makeInitTodoItem({ content: 'This is a todo :)'})
-  ])
-  const {
-    toggle: isEditingTodoList,
-    handleToggle: handleToggleEditingTodoList
-  } = useToggle()
-
-  const handleAddTodo = useCallback((content = 'Default Content') => {
-    setTodoList(todoList => ([
-      ...todoList, makeInitTodoItem({
-        content,
+const useTodoList = ({ initTodoListData = [] }) => {
+  const todoListState = useRef(
+    new TodoListState(
+      new BasicStateStore({
+        todoList: initTodoListData,
       })
-    ]))
-  }, [])
+    )
+  );
+  const [todoList, setTodoList] = useState(todoListState.current.getTodoList());
 
-  const handleToggleChecked = useCallback((id = '') => (checked = false) => {
-    setTodoList(todoList => {
-      const newTodoList = [...todoList]
-      const matchedIdx = todoList.findIndex(todo => todo.id === id)
-      if(matchedIdx === -1) return newTodoList
-      newTodoList[matchedIdx].isChecked = checked
-      return newTodoList
-    })
-  }, [])
+  const handleAddTodo = useCallback(async (content = 'Default Content') => {
+    // console.log('add todo');
+    try {
+      await todoListState.current.addNewTodo(content, asyncAddTodo);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
-  const handleEditTodo = useCallback((id = '') => (content = '') => {
-    setTodoList(todoList => {
-      const newTodoList = [...todoList]
-      const matchedIdx = todoList.findIndex(todo => todo.id === id)
-      if(matchedIdx === -1) return newTodoList
-      newTodoList[matchedIdx].content = content
-      return newTodoList
-    })
-  }, [])
+  const handleToggleChecked = useCallback(
+    (id = '') =>
+      async (checked = false) => {
+        await todoListState.current.updateTodo(
+          {
+            id,
+            updatedTodoData: { checked },
+          },
+          asyncUpdateTodo
+        );
+      },
+    []
+  );
 
-  const handleDeleteTodo = useCallback((id = '') => {
-    setTodoList(todoList => (
-      todoList.filter(todo => todo.id !== id)
-    ))
-  }, [])
+  const handleEditTodo = useCallback(
+    (id = '') =>
+      async (content = '') => {
+        await todoListState.current.updateTodo(
+          {
+            id,
+            updatedTodoData: { content },
+          }
+          // asyncUpdateTodo
+        );
+      },
+    []
+  );
 
-  return ({
+  const handleDeleteTodo = useCallback(async (id = '') => {
+    await todoListState.current.deleteTodo(id, asyncDeleteTodo);
+  }, []);
+
+  useEffect(() => {
+    todoListState.current.stateStore.addListener('updateState', (s) => {
+      setTodoList(s.todoList);
+      // console.log(s.todoList);
+    });
+  }, []);
+
+  return {
     todoList,
     handleAddTodo,
     handleEditTodo,
     handleDeleteTodo,
     handleToggleChecked,
-    handleToggleEditingTodoList,
-  })
+  };
 };
 
 export default useTodoList;
