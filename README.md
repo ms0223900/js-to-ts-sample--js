@@ -1,6 +1,17 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## 簡介
 
-## Getting Started
+這是個基於 clean code 和部分 SOLID 原則，以這些為原則撰寫的 TodoList App。
+主要有以下特色
+
+1. 串接 Firestore Database，以此做為後端資料庫。
+2. api 與行為分離，以注入的方式作為狀態的更新
+3. state 與 react 的 setState 分離，狀態與畫面更新彼此為「非耦合」。
+4. action 獨立於 state，同樣以 pure function 的方式注入 state 使用。
+5. 設計了獨立於 setState 的`BasicStateStore`，主要用於狀態的更新與監聽同步。
+
+## 啟動專案
+
+將`.env.local`改名為`.env`，填入你專案 Firebase Config 的 API_KEY 和 APP_ID
 
 First, run the development server:
 
